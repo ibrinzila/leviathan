@@ -1,0 +1,27 @@
+name: Bounded civic pilot binary
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: elstongun/leviathan
+          ref: eb045bb1892a8542db23a89f528fba67b3c7abbb
+      - name: Build only CLI
+        run: cargo build --release --locked -j 1 -p leviathan
+      - name: Provenance
+        run: |
+          mkdir artifact
+          cp target/release/leviathan LICENSE NOTICE artifact/
+          git rev-parse HEAD > artifact/commit.txt
+          shasum -a 256 artifact/leviathan > artifact/SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: leviathan-macos-arm64-pilot
+          path: artifact/
+          retention-days: 7
